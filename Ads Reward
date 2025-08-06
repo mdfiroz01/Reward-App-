@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>রিওয়ার্ড আর্নিং জোন</title>
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700&display=swap');
+        @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css");
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            --danger-gradient: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            --secondary-color: #fdd835;
+            --bg-color: #121212;
+            --top-bar-bg: rgba(25, 25, 35, 0.5);
+            --container-bg: rgba(30, 30, 50, 0.3);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f0f0f0;
+            --text-secondary: #b0b0b0;
+            --text-on-btn: #fff;
+        }
+        body.light-mode {
+            --bg-color: #f0f2f5; --top-bar-bg: rgba(255, 255, 255, 0.5); --container-bg: rgba(255, 255, 255, 0.4);
+            --card-bg: rgba(0, 0, 0, 0.05); --glass-bg: rgba(0, 0, 0, 0.05); --glass-border: rgba(0, 0, 0, 0.1);
+            --border-color: rgba(0, 0, 0, 0.1); --text-primary: #1c1c1e; --text-secondary: #555; --text-on-btn: #111;
+        }
+        body {
+            font-family: 'Noto Sans Bengali', sans-serif; color: var(--text-primary); display: flex; justify-content: center;
+            align-items: flex-start; min-height: 100vh; padding: 20px; box-sizing: border-box; padding-top: 90px;
+            transition: background-color 0.3s, color 0.3s; background: linear-gradient(45deg, #1e133b, #3b1f4a, #1e3a8a, #4f46e5);
+            background-size: 400% 400%; animation: gradientBG 25s ease infinite;
+        }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .top-user-profile { position: fixed; top: 0; left: 0; width: 100%; background: var(--top-bar-bg); backdrop-filter: blur(10px); padding: 12px 20px; z-index: 102; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
+        .user-info-left { display: flex; align-items: center; gap: 12px; }
+        .profile-picture { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--border-color); object-fit: cover; }
+        .user-details h3 { font-size: 16px; margin: 0; } .user-details p { font-size: 13px; margin: 0; color: var(--text-secondary); }
+        .container { width: 100%; max-width: 400px; background: var(--container-bg); backdrop-filter: blur(20px); border-radius: 24px; border: 1px solid var(--border-color); padding: 32px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); text-align: center; margin-bottom: 80px; }
+        .profile-header h1 { font-size: 26px; font-weight: 700; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 24px; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: var(--card-bg); padding: 16px; border-radius: 16px; backdrop-filter: blur(5px); }
+        .stat-card p { font-size: 14px; color: var(--text-secondary); margin: 0 0 4px 0; }
+        .stat-card span { font-size: 22px; font-weight: 700; }
+        .btn { width: 100%; padding: 16px; font-size: 18px; font-weight: 700; border: none; border-radius: 16px; cursor: pointer; transition: all 0.3s ease; margin-bottom: 12px; background: var(--glass-bg); color: var(--text-primary); border: 1px solid var(--glass-border); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .btn:hover { background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 15px rgba(255, 255, 255, 0.2); }
+        .btn-primary { background: var(--primary-gradient); color: white; border: none;}
+        .btn-danger { background: var(--danger-gradient); color: white; border: none;}
+        .btn-withdraw { background: var(--secondary-color); color: #333; border: none;}
+        .hidden-section { display: none; margin-top: 24px; text-align: left; background: var(--card-bg); padding: 16px; border-radius: 16px; }
+        .hidden-section h4 { text-align: center; margin-top: 0; font-weight: 500; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;}
+        .hidden-section input, .hidden-section select, .hidden-section textarea { width: 100%; padding: 14px; margin-bottom: 12px; border-radius: 12px; border: 1px solid var(--border-color); background-color: rgba(0,0,0,0.2); color: var(--text-primary); box-sizing: border-box; font-size: 16px; font-family: 'Noto Sans Bengali', sans-serif;}
+        .footer-actions { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: center; }
+        #theme-toggle-btn { flex-basis: 60px; font-size: 18px; padding: 12px; }
+        .notice-ticker-container { position: fixed; bottom: 0; left: 0; width: 100%; background: linear-gradient(90deg, #1e3a8a, #4f46e5); color: white; padding: 10px 0; overflow: hidden; white-space: nowrap; z-index: 100; }
+        .notice-text { display: inline-block; padding-left: 100%; animation: scroll-left 35s linear infinite; font-weight: 500; }
+        @keyframes scroll-left { 0% { transform: translateX(0%); } 100% { transform: translateX(-200%); } }
+        /* ভাসমান বাটনসমূহ (Floating Buttons) */
+        .floating-buttons { position: fixed; bottom: 80px; right: 15px; z-index: 101; display: flex; flex-direction: column; gap: 10px; }
+        .floating-btn { width: 50px; height: 50px; border-radius: 50%; border: none; background: var(--primary-gradient); color: white; display: flex; justify-content: center; align-items: center; font-size: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; }
+        /* হিস্ট্রি সেকশন */
+        .history-item { padding: 10px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .history-item:last-child { border-bottom: none; }
+        .history-details p { margin: 0; font-size: 14px; } .history-details small { color: var(--text-secondary); }
+        .history-status { font-weight: bold; font-size: 14px; }
+        .status-pending { color: orange; } .status-approved { color: limegreen; } .status-rejected { color: #ff4b2b; }
+    </style>
+</head>
+<body>
+    <div class="top-user-profile">
+        <div class="user-info-left">
+            <img src="https://i.ibb.co/6yTXMLd/default-avatar.png" alt="Profile" class="profile-picture" id="user-profile-pic">
+            <div class="user-details">
+                <h3 id="user-display-name">ব্যবহারকারী</h3>
+                <p id="telegram-id-top">লোড হচ্ছে...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="user-container">
+        <div class="profile-header"><h1>রিওয়ার্ড জোন</h1></div>
+        <div class="stats-grid">
+            <div class="stat-card"><p>দেখা বিজ্ঞাপন</p><span id="watched-ads">0</span></div>
+            <div class="stat-card"><p>অর্জিত পয়েন্ট</p><span id="earned-points">0.00</span></div>
+        </div>
+        <div class="action-buttons">
+            <button class="btn btn-primary" id="watch-ad-btn" onclick="watchAd()">বিজ্ঞাপন দেখুন</button>
+            <button class="btn" onclick="toggleSection('withdraw-section')">পয়েন্ট উত্তোলন</button>
+            <button class="btn" onclick="toggleSection('history-section')">হিস্ট্রি দেখুন</button>
+            <button class="btn" onclick="toggleSection('support-section')">সমস্যা জানান</button>
+        </div>
+        <!-- Sections -->
+        <div class="hidden-section" id="withdraw-section">
+            <h4>পয়েন্ট উত্তোলন</h4>
+            <select id="payment-method"><option value="bKash">বিকাশ</option><option value="Nagad">নগদ</option></select>
+            <input type="text" id="withdraw-phone" placeholder="আপনার একাউন্ট নম্বর">
+            <input type="number" id="withdraw-amount" placeholder="পয়েন্টের পরিমাণ">
+            <button class="btn btn-withdraw" onclick="withdrawPoints()">অনুরোধ পাঠান</button>
+        </div>
+        <div class="hidden-section" id="history-section">
+            <h4>উত্তোলনের হিস্ট্রি</h4>
+            <div id="history-list"></div>
+        </div>
+        <div class="hidden-section" id="support-section">
+            <h4>সহায়তা ফর্ম</h4>
+            <select id="problem-type"><option value="" disabled selected>সমস্যার ধরণ</option><option value="Payment">পেমেন্ট</option><option value="Points">পয়েন্ট</option><option value="Ads">বিজ্ঞাপন</option><option value="Other">অন্যান্য</option></select>
+            <textarea id="problem-description" placeholder="আপনার সমস্যার বিস্তারিত লিখুন..."></textarea>
+            <button class="btn btn-primary" onclick="submitSupportRequest()">জমা দিন</button>
+        </div>
+        <div class="footer-actions">
+             <button class="btn btn-danger" onclick="clearMyData()">ডেটা রিসেট</button>
+             <button class="btn" id="theme-toggle-btn" title="থিম পরিবর্তন"><i class="fas fa-moon"></i></button>
+        </div>
+    </div>
+
+    <!-- ভাসমান বাটনসমূহ (Floating Buttons) -->
+    <div class="floating-buttons">
+        <button class="floating-btn" title="রেফার করুন" onclick="showReferral()"><i class="fas fa-user-plus"></i></button>
+        <button class="floating-btn" title="শেয়ার করুন" onclick="shareApp()"><i class="fas fa-share-alt"></i></button>
+    </div>
+
+    <div class="notice-ticker-container">
+        <p class="notice-text" id="notice-text">লোড হচ্ছে...</p>
+    </div>
+    
+    <script src='//libtl.com/sdk.js' data-zone='9523265' data-sdk='show_9523265' async></script>
+
+    <script>
+        // --- Shared Database Functions (অ্যাডমিন প্যানেলের সাথে সংযুক্ত) ---
+        function getDatabase() {
+            const dbString = localStorage.getItem('app_database_v2');
+            if (dbString) { return JSON.parse(dbString); }
+            return {
+                users: {}, withdrawals: [], supportTickets: [],
+                settings: { adPrice: 0.5, minWithdraw: 50, noticeText: "অ্যাপে স্বাগতম!", withdrawStatus: "enabled" }
+            };
+        }
+        function saveDatabase(db) { localStorage.setItem('app_database_v2', JSON.stringify(db)); }
+
+        // --- User Logic ---
+        let currentUserId = null;
+        let tg = window.Telegram.WebApp;
+
+        tg.ready(); // Telegram Web App SDK প্রস্তুত
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeUser();
+            setupTheme();
+        });
+
+        function initializeUser() {
+            const tgUser = tg.initDataUnsafe?.user;
+
+            if (tgUser) {
+                // যদি টেলিগ্রাম থেকে ব্যবহারকারী পাওয়া যায়
+                currentUserId = `@${tgUser.username}` || `id_${tgUser.id}`;
+                localStorage.setItem('currentUserId', currentUserId);
+            } else {
+                // টেলিগ্রামের বাইরে খোলা হলে, পুরনো পদ্ধতি ব্যবহার হবে
+                currentUserId = localStorage.getItem('currentUserId');
+                 if (!currentUserId) {
+                    tg.close(); // টেলিগ্রামের বাইরে কোনো ব্যবহারকারী না থাকলে অ্যাপ বন্ধ করে দিন
+                    return;
+                }
+            }
+           
+            let db = getDatabase();
+
+            if (!db.users[currentUserId]) {
+                db.users[currentUserId] = {
+                    id: currentUserId,
+                    displayName: tgUser?.first_name || `Guest`,
+                    watchedAds: 0, points: 0.0, isBanned: false,
+                    createdAt: new Date().toISOString()
+                };
+                saveDatabase(db);
+            }
+            
+            const user = db.users[currentUserId];
+            if (user && user.isBanned) {
+                document.body.innerHTML = `<h1 style="color:red; text-align:center; padding-top: 50px;">আপনার অ্যাকাউন্টটি নিষিদ্ধ করা হয়েছে।</h1>`;
+                return;
+            }
+            updateUI();
+        }
+
+        function updateUI() {
+            const db = getDatabase();
+            if (!currentUserId || !db.users[currentUserId]) { clearMyData(); return; }
+            const user = db.users[currentUserId];
+            
+            document.getElementById('user-display-name').textContent = user.displayName;
+            document.getElementById('telegram-id-top').textContent = user.id;
+            document.getElementById('watched-ads').textContent = user.watchedAds;
+            document.getElementById('earned-points').textContent = user.points.toFixed(2);
+            document.getElementById('notice-text').textContent = db.settings.noticeText;
+        }
+
+        async function watchAd() {
+            const adButton = document.getElementById('watch-ad-btn');
+            adButton.disabled = true;
+            adButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> লোড হচ্ছে...';
+            
+            let db = getDatabase();
+            const adPrice = db.settings.adPrice;
+
+            const grantPoints = () => {
+                db = getDatabase();
+                db.users[currentUserId].watchedAds += 1;
+                db.users[currentUserId].points += adPrice;
+                saveDatabase(db); updateUI();
+            };
+            
+            if (typeof show_9523265 === 'function') {
+                try {
+                    await show_9523265(); grantPoints();
+                } catch (error) {
+                    console.error("Ad failed:", error); alert("বিজ্ঞাপন লোড করা যায়নি।");
+                } finally { adButton.disabled = false; adButton.innerHTML = 'বিজ্ঞাপন দেখুন'; }
+            } else {
+                console.warn("Ad SDK not found. Simulating.");
+                setTimeout(() => { grantPoints(); adButton.disabled = false; adButton.innerHTML = 'বিজ্ঞাপন দেখুন'; }, 1000);
+            }
+        }
+
+        function withdrawPoints() {
+            let db = getDatabase();
+            if (db.settings.withdrawStatus === 'disabled') { alert("দুঃখিত, উত্তোলন সিস্টেম সাময়িকভাবে বন্ধ আছে।"); return; }
+            const phone = document.getElementById('withdraw-phone').value;
+            const amount = parseFloat(document.getElementById('withdraw-amount').value);
+            const userPoints = db.users[currentUserId].points;
+            const minWithdraw = db.settings.minWithdraw;
+
+            if (!phone || !amount) { alert("সকল তথ্য পূরণ করুন।"); return; }
+            if (amount < minWithdraw) { alert(`ন্যূনতম ${minWithdraw} পয়েন্ট উত্তোলন করতে পারবেন।`); return; }
+            if (amount > userPoints) { alert("আপনার পর্যাপ্ত পয়েন্ট নেই!"); return; }
+
+            db.users[currentUserId].points -= amount;
+            db.withdrawals.push({
+                id: 'wd_' + Date.now(), userId: currentUserId, method: document.getElementById('payment-method').value,
+                phone: phone, amount: amount, status: 'pending', date: new Date().toISOString()
+            });
+            saveDatabase(db);
+            updateUI();
+            alert(`আপনার ${amount} পয়েন্ট উত্তোলনের অনুরোধ পাঠানো হয়েছে।`);
+            toggleSection('withdraw-section');
+        }
+
+        function submitSupportRequest() {
+            const type = document.getElementById('problem-type').value;
+            const description = document.getElementById('problem-description').value;
+            if (!type || !description) { alert("ফর্মটি পূরণ করুন।"); return; }
+            let db = getDatabase();
+            db.supportTickets.push({
+                id: 'tkt_' + Date.now(), userId: currentUserId, type: type,
+                description: description, status: 'open', date: new Date().toISOString()
+            });
+            saveDatabase(db);
+            alert("আপনার অনুরোধ জমা দেওয়া হয়েছে।");
+            toggleSection('support-section');
+        }
+
+        function renderHistory() {
+            const db = getDatabase();
+            const historyList = document.getElementById('history-list');
+            const userWithdrawals = db.withdrawals.filter(w => w.userId === currentUserId).reverse();
+            
+            if (userWithdrawals.length === 0) {
+                historyList.innerHTML = '<p style="text-align:center; color: var(--text-secondary);">আপনার কোনো হিস্ট্রি নেই।</p>';
+                return;
+            }
+
+            let html = '';
+            userWithdrawals.forEach(w => {
+                let statusClass = '';
+                if (w.status === 'pending') statusClass = 'status-pending';
+                else if (w.status === 'approved') statusClass = 'status-approved';
+                else if (w.status === 'rejected') statusClass = 'status-rejected';
+
+                html += `<div class="history-item">
+                    <div class="history-details">
+                        <p>${w.amount.toFixed(2)} পয়েন্ট - ${w.method} (${w.phone})</p>
+                        <small>${new Date(w.date).toLocaleString('bn-BD')}</small>
+                    </div>
+                    <div class="history-status ${statusClass}">${w.status.toUpperCase()}</div>
+                </div>`;
+            });
+            historyList.innerHTML = html;
+        }
+
+        // --- নতুন ফাংশন ---
+        async function shareApp() {
+            const shareData = {
+                title: 'রিওয়ার্ড আর্নিং জোন',
+                text: 'এই অ্যাপ থেকে বিজ্ঞাপন দেখে পয়েন্ট আয় করুন!',
+                url: window.location.href
+            };
+            try {
+                if (navigator.share) {
+                    await navigator.share(shareData);
+                } else {
+                    alert("আপনার ব্রাউজার শেয়ার সমর্থন করে না।");
+                }
+            } catch (err) {
+                console.error("Share error:", err);
+            }
+        }
+        
+        function showReferral() {
+            const user = getDatabase().users[currentUserId];
+            if (user) {
+                const referralId = user.id;
+                prompt("আপনার বন্ধুদের সাথে রেফারেল আইডি শেয়ার করুন:", referralId);
+            }
+        }
+
+        function clearMyData() { if (confirm("আপনি কি নিশ্চিত আপনার ডেটা মুছে ফেলতে চান?")) { localStorage.clear(); window.location.reload(); } }
+        function toggleSection(sectionId) {
+            if (sectionId === 'history-section') {
+                renderHistory();
+            }
+            document.querySelectorAll('.hidden-section').forEach(s => {
+                if (s.id === sectionId) s.style.display = (s.style.display !== 'block') ? 'block' : 'none';
+                else s.style.display = 'none';
+            });
+        }
+        function setupTheme() { const btn = document.getElementById('theme-toggle-btn'); const load = () => { if (localStorage.getItem('theme') === 'light') { document.body.classList.add('light-mode'); btn.innerHTML = '<i class="fas fa-sun"></i>'; } else { document.body.classList.remove('light-mode'); btn.innerHTML = '<i class="fas fa-moon"></i>'; } }; btn.addEventListener('click', () => { document.body.classList.toggle('light-mode'); localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark'); load(); }); load(); }
+    </script>
+</body>
+</html>
